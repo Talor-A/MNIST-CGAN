@@ -115,11 +115,9 @@ class ACGAN():
 
         return Model(img, [validity, label])
 
-    def train(self, epochs, batch_size=128, sample_interval=50):
+    def train(self, X_train, y_train, epochs=50, batch_size=128, sample_interval=50):
 
-        # Load the dataset
-        (X_train, y_train), (_, _) = mnist.load_data()
-
+        
         # Configure inputs
         X_train = (X_train.astype(np.float32) - 127.5) / 127.5
         X_train = np.expand_dims(X_train, axis=3)
@@ -128,6 +126,7 @@ class ACGAN():
         # Adversarial ground truths
         valid = np.ones((batch_size, 1))
         fake = np.zeros((batch_size, 1))
+        hist = []
 
         for epoch in range(epochs):
 
@@ -167,11 +166,14 @@ class ACGAN():
 
             # Plot the progress
             print ("%d [D loss: %f, acc.: %.2f%%, op_acc: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[3], 100*d_loss[4], g_loss[0]))
-
+            hist.append((d_loss, g_loss))
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:
                 self.save_model()
                 self.sample_images(epoch)
+        self.sample_images(epochs)
+        self.save_model()
+        return hist
 
     def sample_images(self, epoch):
         r, c = 10, 10
@@ -194,18 +196,19 @@ class ACGAN():
     def save_model(self):
 
         def save(model, model_name):
-            model_path = "saved_model/%s.json" % model_name
-            weights_path = "saved_model/%s_weights.hdf5" % model_name
-            options = {"file_arch": model_path,
-                        "file_weight": weights_path}
-            json_string = model.to_json()
-            open(options['file_arch'], 'w').write(json_string)
-            model.save_weights(options['file_weight'])
+            # model_path = "saved_model/%s.json" % model_name
+            weights_path = "weights/%s_weights.hdf5" % model_name
+            # options = {"file_arch": model_path,
+            #             "file_weight": weights_path}
+            # json_string = model.to_json()
+            # open(options['file_arch'], 'w').write(json_string)
+            # model.save_weights(options['file_weight'])
+            model.save_weights(weights_path)
 
         save(self.generator, "generator")
         save(self.discriminator, "discriminator")
 
+    def load_weights(self, gen_weights, disc_weights):
+        self.generator.load_weights(gen_weights)
+        self.discriminator.load_weights(disc_weights)
 
-if __name__ == '__main__':
-    acgan = ACGAN()
-    acgan.train(epochs=14000, batch_size=32, sample_interval=200)
