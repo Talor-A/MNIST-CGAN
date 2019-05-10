@@ -1,6 +1,9 @@
 poster.key
+.DS_Store
+
 .vscode/
-weights/*
+images*/
+weights*/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

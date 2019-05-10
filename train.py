@@ -10,3 +10,4 @@ CLASSES = 10
 acgan = ACGAN(IMG_SIZE,IMG_SIZE,CHANNELS,CLASSES)
 
 hist = acgan.train(X_train, y_train, epochs=2000, batch_size=100, sample_interval=200)
+
